@@ -1,0 +1,33 @@
+IDL> time = findgen(10000)  ;  define time array 
+
+   A 1 sec time is generally adequate, but in applications where exceptionally strong conductive cooling 
+   is expected (e.g., intense short duration heating events, especially in short loops), a shorter time step 
+   may be necessary. If there is a question, users should compare runs with different time steps and verify 
+   that there are no significant differences in the results.
+   
+IDL> heat = fltarr(10000)   ;  define corresponding heating array
+IDL> heat0 = 0.01           ;  amplitude of (nano)flare (erg cm^-3 s^-1)
+IDL> for i = 0, 250 do heat(i) = heat0*time(i)/250.  ;  triangular profile rise
+IDL> for i = 251, 500 do heat(i) = heat0*(500. - time(i))/250.  ;  decay
+IDL> heat_bkg = 1.e-6       ;  low level constant background heating
+IDL> heat = heat + heat_bkg
+
+IDL> length = 7.5e9         ;  loop half length (cm)
+
+IDL> ebtel2, time, heat, length, t, n, p, v, ta, na, pa, c11, dem_tr, dem_cor, logtdem, /classical  ;  hydro simulation
+  or
+IDL> ebtel, time, heat, length, t, n, p, v, dem_tr, dem_cor, logtdem, /classical  ;  hydro simulation
+
+IDL> plot, time, t, xtit='Time (s)', ytit='Temperature (K)'  ;  plot temperature evolution
+
+IDL> dem_tot = dem_cor + dem_tr  ;  total differential emission measure (corona plus footpoint)
+
+IDL> gofnt, 'fe_12', 190, 200, t_array, g_array, density=1.e9  ;  FeXII (195) G(T) function from CHIANTI
+
+IDL> intensity_ebtel, dem_tot, logtdem, g_array, t_array, int, t, n, length, int_avg  ;  compute FeXII intensity
+
+IDL> plot, time, int, xtit='Time (s)', ytit='FeXII (195) Intensity'  ;  plot intensity evolution
+
+IDL> dem60 = total(dem_tot(1000:1059,*),1)  ;  integrate DEM(T) over 60 s interval starting at t = 1000 s
+
+IDL> plot, logtdem, alog10(dem60), xtit='log T (K)',ytit='log DEM (cm!U-5!N K!U-1!N)', tit='1000-1059 s Integration', xran=[5.,7.], /ynoz   ;  plot DEM(T) for 60 s integration
