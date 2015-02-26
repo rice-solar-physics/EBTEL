@@ -63,40 +63,40 @@ Compute the evolution of spatially-averaged (along the field) loop quantities us
   
 ###EXAMPLE RUN:
 + Define the necessary parameters
-    +`IDL> time = findgen(10000)` 										Define time array
-    +`IDL> heat = fltarr(10000)` 										Define corresponding heating array
-    +`IDL> heat0 = 0.01` 												Amplitude of (nano)flare (erg cm^-3 s^-1)
-    +`IDL> for i = 0, 250 do heat(i) = heat0*time(i)/250.`  				Triangular profile rise
-    +`IDL> for i = 251, 500 do heat(i) = heat0*(500. - time(i))/250.` 	Decay
-    +`IDL> heat_bkg = 1.e-6`     										Low level constant background heating
-    +`IDL> heat = heat + heat_bkg`
-    +`IDL> length = 7.5e9`           									Loop half length (cm)
+    + `IDL> time = findgen(10000)` 										Define time array
+    + `IDL> heat = fltarr(10000)` 										Define corresponding heating array
+    + `IDL> heat0 = 0.01` 												Amplitude of (nano)flare (erg cm^-3 s^-1)
+    + `IDL> for i = 0, 250 do heat(i) = heat0*time(i)/250.`  				Triangular profile rise
+    + `IDL> for i = 251, 500 do heat(i) = heat0*(500. - time(i))/250.` 	Decay
+    + `IDL> heat_bkg = 1.e-6`     										Low level constant background heating
+    + `IDL> heat = heat + heat_bkg`
+    + `IDL> length = 7.5e9`           									Loop half length (cm)
 
 + Hydro simulation
-    `IDL> ebtel2, time, heat, length, t, n, p, v, ta, na, pa, c11, dem_tr, dem_cor, logtdem, /classical`
-    or
-    `IDL> ebtel, time, heat, length, t, n, p, v, dem_tr, dem_cor, logtdem, /classical`
+    + `IDL> ebtel2, time, heat, length, t, n, p, v, ta, na, pa, c11, dem_tr, dem_cor, logtdem, /classical`
+    + or
+    + `IDL> ebtel, time, heat, length, t, n, p, v, dem_tr, dem_cor, logtdem, /classical`
 
 + Plot temperature evolution
-    `IDL> plot, time, t, xtit='Time (s)', ytit='Temperature (K)'`
+    + `IDL> plot, time, t, xtit='Time (s)', ytit='Temperature (K)'`
 
 + Total differential emission measure (corona plus footpoint)
-    `IDL> dem_tot = dem_cor + dem_tr`
+    + `IDL> dem_tot = dem_cor + dem_tr`
 
 + FeXII (195) G(T) function from CHIANTI
-    `IDL> gofnt, 'fe_12', 190, 200, t_array, g_array, density=1.e9`
+    + `IDL> gofnt, 'fe_12', 190, 200, t_array, g_array, density=1.e9`
 
 + Compute FeXII intensity
-    `IDL> intensity_ebtel, dem_tot, logtdem, g_array, t_array, int, t, n, length, int_avg`
+    + `IDL> intensity_ebtel, dem_tot, logtdem, g_array, t_array, int, t, n, length, int_avg`
 
 + Plot intensity evolution
-    `IDL> plot, time, int, xtit='Time (s)', ytit='FeXII (195) Intensity'`
+    + `IDL> plot, time, int, xtit='Time (s)', ytit='FeXII (195) Intensity'`
 
 + Integrate DEM(T) over 60 s interval starting at t = 1000 s
-    `IDL> dem60 = total(dem_tot(1000:1059,*),1)`
+    + `IDL> dem60 = total(dem_tot(1000:1059,*),1)`
 
 + Plot DEM(T) for 60 s integration
-    `IDL> plot, logtdem, alog10(dem60), xtit='log T (K)',ytit='log DEM (cm!U-5!N K!U-1!N)', tit='1000-1059 s Integration', xran=[5.,7.], /ynoz`
+    + `IDL> plot, logtdem, alog10(dem60), xtit='log T (K)',ytit='log DEM (cm!U-5!N K!U-1!N)', tit='1000-1059 s Integration', xran=[5.,7.], /ynoz`
 
 ##INTENSITIES:
 For observations in which temperature response function, G(T), has units of DN s^-1 pix^-1 cm^5 and the loop diameter, d, is larger than the pixel dimension, l_pix:
