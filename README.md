@@ -62,16 +62,16 @@ Compute the evolution of spatially-averaged (along the field) loop quantities us
 ##INTENSITIES:
 For observations in which temperature response function, G(T), has units of DN s^-1 pix^-1 cm^5 and the loop diameter, d, is larger than the pixel dimension, l_pix:
 
-+ I_cor_perp = d/(2L)* Int{G(T)*dem_cor(T)*dT}
-+ I_tr_perp = d/l_pix * Int{G(T)*dem_tr(T)*dT}
-+ I_tr_parallel = Int{G(T)*dem_tr(T)*dT} ,
++ I_cor_perp = d/(2L) * Int{G(T) * dem_cor(T) * dT}
++ I_tr_perp = d/l_pix * Int{G(T) * dem_tr(T) * dT}
++ I_tr_parallel = Int{G(T) * dem_tr(T) * dT}
 
 for lines-of-sight perpendicular and parallel to the loop axis. I_tr_perp assumes that the transition region is thinner than l_pix.
 
 ##MISCELLANEOUS COMMENTS:
-+ A 1 sec time is generally adequate, but in applications where exceptionally strong conductive cooling is expected (e.g., intense short duration heating events, especially in short loops), a shorter time step may be necessary. If there is a question, users should compare runs with different time steps and verify that there are no significant differences in the results.
++ A 1 sec time step is generally adequate, but in applications where exceptionally strong conductive cooling is expected (e.g., intense short duration heating events, especially in short loops), a shorter time step may be necessary. If there is a question, users should compare runs with different time steps and verify that there are no significant differences in the results.
 + Runs much more quickly if the transition region DEM is not computed.
-+ Speed can be increased by increasing the minimum DEM temperature from 10^4 to, say, 10^5 Kor by decreasing the maximum DEM temperature from 10^8.5 to, say, 10^7.5 (search on 450 and 451).
++ Speed can be increased by increasing the minimum DEM temperature from 10^4 to, say, 10^5 K or by decreasing the maximum DEM temperature from 10^8.5 to, say, 10^7.5 (search on 450 and 451).
 + The equilibrium base heat flux coefficient of 2/7 is appropriate for uniform heating; a coefficient of 4/7 is more appropriate for apex heating.
 + To have equal amounts of thermal and nonthermal heating:  flux_nt = heat*length.
 + It is desirable to have a low-level background heating during the cooling phase so that the coronal temperature does not drop below values at which the corona DEM is invalid.
