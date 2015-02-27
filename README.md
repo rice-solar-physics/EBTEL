@@ -8,7 +8,7 @@ For more information regarding the EBTEL model see:
 + <a href="http://adsabs.harvard.edu/abs/2012ApJ...758....5C">Cargill et al. 2012B, ApJ, 758:5 (Paper 3)</a>
 
 ##TERMS OF USE
-This code is the authorized version of EBTEL dated January 2013. Updates will be made as and when necessary.This code is distributed as is. Modifications by the user are allowed, but are unsupported. If you believe you have encountered an error in the original (i.e. unaltered) code, create an issue or submit a pull request with the requested changes.
+This code is the authorized version of EBTEL dated January 2013. Updates will be made as and when necessary.This code is distributed as is. Modifications by the user are unsupported. If you believe you have encountered an error in the original (i.e. unaltered) code, create an issue or submit a pull request with the requested changes.
 
 Use of EBTEL should be acknowledged by referencing Papers 1 & 2 as listed above.  
 
@@ -114,7 +114,6 @@ for lines-of-sight perpendicular and parallel to the loop axis. I_tr_perp assume
 + The equilibrium base heat flux coefficient of 2/7 is appropriate for uniform heating; a coefficient of 4/7 is more appropriate for apex heating.
 + To have equal amounts of thermal and nonthermal heating:  flux_nt = heat*length.
 + It is desirable to have a low-level background heating during the cooling phase so that the coronal temperature does not drop below values at which the corona DEM is invalid.
-+ r1 = c_3 = 0.7 gives more accurate coronal evolution than the original 0.5, especially in the late phase of cooling.  However, it produces excess DEM at the very hottest temperatures during impulsive events, and the transition region DEM is somewhat elevated.  We have therefore introduced r1_tr = 0.5, which provides a more accurate transition region DEM at the same time that r1 = 0.7 provides a more accurate radiative cooling.
 + v = (c_3/c_2)*(t_tr/t)*v_0 = (r1/r2)*(t_tr/t)*(v/r4) at temperature t_tr in the transition region, where t is the average coronal temperature.
 
  
