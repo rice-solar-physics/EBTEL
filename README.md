@@ -75,7 +75,7 @@ Compute the evolution of spatially-averaged (along the field) loop quantities us
 + Hydro simulation
     + `IDL> ebtel2, time, heat, length, t, n, p, v, ta, na, pa, c11, dem_tr, dem_cor, logtdem, /classical`
     + or
-    + `IDL> ebtel, time, heat, length, t, n, p, v, dem_tr, dem_cor, logtdem, /classical`
+    + `IDL> ebtel2, time, heat, length, t, n, p, v, dem_tr, dem_cor, logtdem, /classical`
 
 + Plot temperature evolution
     + `IDL> plot, time, t, xtit='Time (s)', ytit='Temperature (K)'`
