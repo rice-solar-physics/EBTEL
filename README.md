@@ -1,5 +1,5 @@
 # EBTEL
-Enthalpy-Based Thermal Evolution of Loops (EBTEL) model coded in the IDL language by J. A. Klimchuk, S. Patsourakos, and P.J. Cargill
+Enthalpy-Based Thermal Evolution of Loops (EBTEL) model coded in the IDL language by J. A. Klimchuk, S. Patsourakos, and P.J. Cargill.
 
 For more information regarding the EBTEL model see:
 
@@ -7,7 +7,7 @@ For more information regarding the EBTEL model see:
 + <a href="http://adsabs.harvard.edu/abs/2012ApJ...752..161C">Cargill et al. 2012A, ApJ, 752:161 (Paper 2)</a>
 + <a href="http://adsabs.harvard.edu/abs/2012ApJ...758....5C">Cargill et al. 2012B, ApJ, 758:5 (Paper 3)</a>
 
-##TERMS OF USE
+##TERMS OF USE:
 This code is the authorized version of EBTEL dated January 2013. Updates will be made as and when necessary.This code is distributed as is. Modifications by the user are unsupported. If you believe you have encountered an error in the original (i.e. unaltered) code, create an issue or submit a pull request with the requested changes.
 
 Use of EBTEL should be acknowledged by referencing Papers 1 & 2 as listed above.  
