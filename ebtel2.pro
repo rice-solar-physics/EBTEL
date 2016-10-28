@@ -1,6 +1,6 @@
    pro ebtel2, ttime, heat, length, t, n, p, v, ta, na, pa, c11, dem_tr, dem_cor,  $
        logtdem, f_ratio, rad_ratio, cond, rad_cor,$
-       classical=classical, dem_old=dem_old, $
+       classical=classical, dynamic=dynamic, dem_old=dem_old, $
        flux_nt=flux_nt, energy_nt=energy_nt, rtv=rtv
      ;
      ; NAME:  Enthalpy-Based Thermal Evolution of Loops (EBTEL)
@@ -21,6 +21,7 @@
      ;
      ; OPTIONAL KEYWORD INPUTS:
      ;   classical = set to use the UNsaturated classical heat flux
+     ;   dynamic   = set to use dynamical r1 and r2 (NOT recommended, especially when T > 10 MK). Now redundant.
      ;   dem_old   = set to use old technique of computing DEM(T) in the trans. reg.
      ;               (weighted average of demev, demcon, and demeq)
      ;   flux_nt   = energy flux array for nonthermal electrons impinging the chromosphere
@@ -92,6 +93,11 @@
      ;   To have equal amounts of thermal and nonthermal heating:  flux_nt = heat*length.
      ;   It is desirable to have a low-level background heating during the cooling phase so that the
      ;      coronal temperature does not drop below values at which the corona DEM is invalid.
+     ;   r1 = c_3 = 0.7 gives more accurate coronal evolution than the original 0.5, especially in
+     ;      the late phase of cooling.  However, it produces excess DEM at the very hottest temperatures
+     ;      during impulsive events, and the transition region DEM is somewhat elevated.  We have
+     ;      therefore introduced r1_tr = 0.5, which provides a more accurate transition region DEM at
+     ;      the same time that r1 = 0.7 provides a more accurate radiative cooling.
      ;   v = (c_3/c_2)*(t_tr/t)*v_0 = (r1/r2)*(t_tr/t)*(v/r4) at temperature t_tr in the transition
      ;      region, where t is the average coronal temperature.
      ;
