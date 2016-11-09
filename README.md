@@ -7,27 +7,34 @@ For more information regarding the EBTEL model see:
 + <a href="http://adsabs.harvard.edu/abs/2012ApJ...752..161C">Cargill et al. 2012A, ApJ, 752:161 (Paper 2)</a>
 + <a href="http://adsabs.harvard.edu/abs/2012ApJ...758....5C">Cargill et al. 2012B, ApJ, 758:5 (Paper 3)</a>
 
-##TERMS OF USE:
+See also [ebtel++](https://github.com/rice-solar-physics/ebtelPlusPlus), a C++ implementation of the EBTEL model that treats the electron and ion populations separately. Note that while the IDL version of EBTEL only solves the single fluid equations, there is little or no difference between the two-fluid and single-fluid models below roughly 5 MK.
+
+## Word of Caution
+In its integration scheme, EBTEL IDL uses a fixed timestep with a default value of 1 second. In order to accurately model a strong, impulsive heating event, it is necessary to resolve the timescales of the relevant physical processes, most notably thermal conduction, which can be on the order of milliseconds for a typical coronal plasma (e.g. [Bradshaw and Cargill, 2013](http://adsabs.harvard.edu/abs/2013ApJ...770...12B)). Thus the EBTEL IDL integration routine with the default timestep may under resolve portions of the loop's evolution, particularly in the early heating and conductive cooling phases. 
+
+[ebtel++](https://github.com/rice-solar-physics/ebtelPlusPlus) addresses this issue by providing an adaptive timestep routine that ensures the timestep is always sufficiently small compared to the timescales of the relevant physical processes. ebtel++ also provides an additional correction to the _c_<sub>1</sub> parameter during the conduction phase and treats the electrons and the ions separately (see appendices of [Barnes et al., 2016](http://adsabs.harvard.edu/abs/2016ApJ...829...31B) for more details). Both of these corrections are likely to be important in the case of strong, impulsive heating. Thus, for sufficiently short heating timescales and large heating rates, use of ebtel++ is recommended.
+
+## Terms of Use
 This code is the authorized version of EBTEL dated January 2013. Updates will be made as and when necessary.This code is distributed as is. Modifications by the user are unsupported. If you believe you have encountered an error in the original (i.e. unaltered) code, create an issue or submit a pull request with the requested changes.
 
 Use of EBTEL should be acknowledged by referencing Papers 1 & 2 as listed above.  
 
-##PURPOSE:
-Compute the evolution of spatially-averaged (along the field) loop quantities using simplified equations.  The instantaneous differential emission measure of the transition region is also computed. This version incorporates all the modifications from Paper 2 and is written in modular form for clarity. DEM parts unchanged except for TR pressure correction (see Paper 2). 
+## Purpose
+Compute the evolution of spatially-averaged (along the field) loop quantities using simplified equations.  The instantaneous differential emission measure of the transition region is also computed. This version incorporates all the modifications from Paper 2 and is written in modular form for clarity. DEM parts unchanged except for TR pressure correction (see Paper 2).
 
-##INPUTS:
+## Inputs
 + ttime  = time array (s)
 + heat   = heating rate array (erg cm^-3 s^-1)   (direct heating only; the first element, heat(0), determines the initial static equilibrium)
 + length = loop half length (top of chromosphere to apex) (cm)
 
-##OPTIONAL KEYWORD INPUTS:
+## Optional Keyword Inputs
 + classical = set to use the UNsaturated classical heat flux
 + dem_old   = set to use old technique of computing DEM(T) in the trans. reg. (weighted average of demev, demcon, and demeq)
 + flux_nt   = energy flux array for nonthermal electrons impinging the chromosphere (input as a positive quantity; erg cm^-2 s^-1)
 + energy_nt = mean energy of the nonthermal electrons in keV (default is 50 keV)
 + rtv       = set to use Rosner, Tucker, Vaiana radiative loss function (Winebarger form)
 
-##OUTPUTS:
+## Outputs
 + t (t_a) = temperature array corresponding to time (avg. over coronal section of loop / apex)
 + n (n_a) = electron number density array (cm^-3) (coronal avg. / apex)
 + p (p_a) = pressure array (dyn cm^-2) (coronal avg. /apex)
@@ -41,7 +48,7 @@ Compute the evolution of spatially-averaged (along the field) loop quantities us
 + cond = conductive loss from corona
 + rad_cor =  coronal radiative loss
 
-##CORRESPONDENCE WITH VARIABLES IN APJ ARTICLES:
+## Correspondence with Variables in ApJ Articles
 + Paper 1
  + r1 = c_3
  + r2 = c_2
@@ -51,7 +58,7 @@ Compute the evolution of spatially-averaged (along the field) loop quantities us
  + f_eq, ff_eq = - R_tr
  + dem_eq = DEM_se
 
-##USAGE:
+## Usage
 + To include the transition region DEM:
   + `IDL> ebtel2, ttime, heat, t, n, p, v, dem_tr, dem_cor, logtdem`
 + To exclude the transition region DEM (faster):
@@ -60,8 +67,8 @@ Compute the evolution of spatially-averaged (along the field) loop quantities us
   + `IDL> ebtel2, ttime, heat, t, n, p, v, flux_nt=flux_nt`
 + To compute rad_ratio (Requires 25% more computing time):
   + `IDL> ebtel2, ttime, heat, t, n, p, v, dem_tr, dem_cor, logtdem, f_ratio, rad_ratio`
-  
-###EXAMPLE RUN:
+
+### Example Run
 + Define the necessary parameters
     + `IDL> time = findgen(10000)` 										Define time array
     + `IDL> heat = fltarr(10000)` 										Define corresponding heating array
@@ -98,7 +105,7 @@ Compute the evolution of spatially-averaged (along the field) loop quantities us
 + Plot DEM(T) for 60 s integration
     + `IDL> plot, logtdem, alog10(dem60), xtit='log T (K)',ytit='log DEM (cm!U-5!N K!U-1!N)', tit='1000-1059 s Integration', xran=[5.,7.], /ynoz`
 
-##INTENSITIES:
+## Intensities
 For observations in which temperature response function, G(T), has units of DN s^-1 pix^-1 cm^5 and the loop diameter, d, is larger than the pixel dimension, l_pix:
 
 + I_cor_perp = d/(2L) * Int{G(T) * dem_cor(T) * dT}
@@ -107,16 +114,16 @@ For observations in which temperature response function, G(T), has units of DN s
 
 for lines-of-sight perpendicular and parallel to the loop axis. I_tr_perp assumes that the transition region is thinner than l_pix. See `intensity_ebtel.pro` for more information.
 
-##MISCELLANEOUS COMMENTS:
+## Miscellaneous Comments
 + A 1 sec time step is generally adequate, but in applications where exceptionally strong conductive cooling is expected (e.g., intense short duration heating events, especially in short loops), a shorter time step may be necessary. If there is a question, users should compare runs with different time steps and verify that there are no significant differences in the results.
 + Runs much more quickly if the transition region DEM is not computed.
 + Speed can be increased by increasing the minimum DEM temperature from 10^4 to, say, 10^5 K or by decreasing the maximum DEM temperature from 10^8.5 to, say, 10^7.5 (search on 450 and 451).
 + The equilibrium base heat flux coefficient of 2/7 is appropriate for uniform heating; a coefficient of 4/7 is more appropriate for apex heating.
 + To have equal amounts of thermal and nonthermal heating:  flux_nt = heat*length.
 + It is desirable to have a low-level background heating during the cooling phase so that the coronal temperature does not drop below values at which the corona DEM is invalid.
-+ v = (c_3/c_2)*(t_tr/t)*v_0 = (r1/r2)*(t_tr/t)*(v/r4) at temperature t_tr in the transition region, where t is the average coronal temperature.
++ v = (c_3/c_2)(t_tr/t)v_0 = (r1/r2)(t_tr/t)(v/r4) at temperature t_tr in the transition region, where t is the average coronal temperature.
 
- 
-##HISTORY:
-+ May 2012. PC version. Modular form. 
+
+## CHANGELOG
++ May 2012. PC version. Modular form.
 + 2013 Jan 15, JAK, Fixed a bug in the compution of the radiation function at 10^4 K; important for computing radiation losses based on dem_tr; ge vs. gt in computing rad;  lt vs. le in computing rad_dem
