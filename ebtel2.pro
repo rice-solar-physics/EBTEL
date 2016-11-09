@@ -80,10 +80,10 @@
      ;   the transition region is thinner than l_pix.
      ;
      ; MISCELLANEOUS COMMENTS:
-	 ;   A 1 sec time is generally adequate, but in applications where exceptionally strong conductive 
-	 ;      cooling is expected (e.g., intense short duration heating events, especially in short loops), 
-	 ;      a shorter time step may be necessary. If there is a question, users should compare runs with 
-	 ;      different time steps and verify that there are no significant differences in the results.
+     ;   A 1 sec time is generally adequate, but in applications where exceptionally strong conductive 
+     ;      cooling is expected (e.g., intense short duration heating events, especially in short loops), 
+     ;      a shorter time step may be necessary. If there is a question, users should compare runs with 
+     ;      different time steps and verify that there are no significant differences in the results.
      ;   Runs much more quickly if the transition region DEM is not computed.
      ;   Speed can be increased by increasing the minimum DEM temperature from 10^4 to, say, 10^5 K
      ;      or by decreasing the maximum DEM temperature from 10^8.5 to, say, 10^7.5
