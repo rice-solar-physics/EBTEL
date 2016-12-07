@@ -1,4 +1,6 @@
 # EBTEL
+[![ascl:1203.007](https://img.shields.io/badge/ascl-1203.007-blue.svg?colorB=262255)](http://ascl.net/1203.007)
+
 Enthalpy-Based Thermal Evolution of Loops (EBTEL) model coded in the IDL language by J. A. Klimchuk, S. Patsourakos, and P.J. Cargill.
 
 For more information regarding the EBTEL model see:
