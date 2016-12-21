@@ -8,8 +8,8 @@
      ; PURPOSE:
      ;   Compute the evolution of spatially-averaged (along the field) loop quantities
      ;   using simplified equations.  The instantaneous differential emission measure of
-     ;   the transition region is also computed. This version incorporates all the modifications 
-     ;   from Cargill et al (2012) and is written in modular form for clarity. 
+     ;   the transition region is also computed. This version incorporates all the modifications
+     ;   from Cargill et al (2012) and is written in modular form for clarity.
      ;   DEM parts unchanged except for TR pressure correction (see
      ;   Paper 2). Original list of JK modifications removed from preamble.
      ;
@@ -80,9 +80,9 @@
      ;   the transition region is thinner than l_pix.
      ;
      ; MISCELLANEOUS COMMENTS:
-     ;   A 1 sec time is generally adequate, but in applications where exceptionally strong conductive 
-     ;      cooling is expected (e.g., intense short duration heating events, especially in short loops), 
-     ;      a shorter time step may be necessary. If there is a question, users should compare runs with 
+     ;   A 1 sec time is generally adequate, but in applications where exceptionally strong conductive
+     ;      cooling is expected (e.g., intense short duration heating events, especially in short loops),
+     ;      a shorter time step may be necessary. If there is a question, users should compare runs with
      ;      different time steps and verify that there are no significant differences in the results.
      ;   Runs much more quickly if the transition region DEM is not computed.
      ;   Speed can be increased by increasing the minimum DEM temperature from 10^4 to, say, 10^5 K
@@ -101,18 +101,18 @@
      ;   v = (c_3/c_2)*(t_tr/t)*v_0 = (r1/r2)*(t_tr/t)*(v/r4) at temperature t_tr in the transition
      ;      region, where t is the average coronal temperature.
      ;
-       
+
      ; HISTORY:
-     ; May 2012. PC version. Modular form. 
+     ; May 2012. PC version. Modular form.
      ; See original ebtel.pro for many additional comments.
-     ; 2013 Jan 15, JAK, Fixed a bug in the compution of the radiation function at 10^4 K; 
+     ; 2013 Jan 15, JAK, Fixed a bug in the compution of the radiation function at 10^4 K;
      ;      important for computing radiation losses based on dem_tr;
      ;      ge vs. gt in computing rad;  lt vs. le in computing rad_dem
      ; ---------------------------------------------------------------------
      common params, k_b, mp, kappa_0
-       
+
      ntot = n_elements(ttime)
-     
+
      ; Physical constants Can comment out Hydrad lines if needed.
      k_b = 1.38e-16
      mp = 1.67e-24
@@ -124,44 +124,44 @@
      m_fact = (1 + n_he_n_p*4.)/(2 + 3.*n_he_n_p); Include Helium
      m_fact = (1 + n_he_n_p*4.)/2.; For Hydrad comparison
      mp = mp*m_fact*(1 + z_avg)/z_avg; Average ion mass
- 
+
      kappa_0 = 1.e-6
      kappa_0 = 8.12e-7; Hydrad value
-  
+
      ; Set ksX in loss function (T-breaks).
-     
+
      radloss, rad, 1.e6, 0, rtv=rtv
-     
+
      ; Calculate initial Cs (rs in this code).
-     
+
      calc_c3, r1
      r1=0.6
-     
+
      ; Ratio of temperature at top of transition region to apex temperature,
      ;      used only for calculation of transition region DEM, dem_tr
      ;      See miscellaneous comments above.
      ; r1_tr = 0.5
      r1_tr = r1
-     
+
      ; Ratio of average to apex temperature (c_2 in ApJ paper)
-     
+
      calc_c2, r2
      r2 = 0.9
-     
+
      ; Ratio of conductive to radiative losses in equilibrium (c_1 in ApJ paper)
      ; Initial value of C1. Fix value now then later iteration on initial state sets it properly
-     
+
      r3 = 2
-     
+
      ; Ratio of average to base velocity
      r4 = 1.0
-     
+
      ; Invalid heat array
      if (heat(0) eq 0.) then begin
        print, '* * * * No initial loop heating * * * *'
        goto, jump99
      endif
-     
+
      q = heat
      t = fltarr(ntot)
      n = fltarr(ntot)
@@ -174,28 +174,28 @@
      cond = fltarr(ntot)
      rad_cor = fltarr(ntot)
      dz = fltarr(ntot)
-     
+
      ; Set up thermal conduction parameters
      c1 = -2./7.*kappa_0  ;
-     
+
      ;  conduction coefficient
      c_sat = -1.5*k_b^1.5/9.1e-28^0.5
      sat_limit = 1./6.
-     
+
      ; Set up nonthermal electrons
      if not keyword_set(flux_nt) then flux_nt = ttime*0.
      flux_nt = -flux_nt
-     
+
      if not keyword_set(energy_nt) then energy_nt = 50.   ; 50 keV
      j_nt = 6.241e8*flux_nt/energy_nt
-     
+
      dlogt_cor = -alog10(r2)
      dj = fix(100*dlogt_cor)
      nj = 2*dj + 1
-     
+
      ; Set up DEM in transition region
      if n_params() gt 12 then begin
-     
+
        logtdem = findgen(451)/100. + 4.
        tdem = 10.^logtdem
        root_tdem = tdem^0.5
@@ -207,14 +207,14 @@
        demcon = demev
        demeq = demev
        rad_ratio = fltarr(ntot)
-       
+
        f_ratio = fltarr(ntot)
        root_c2 = (kappa_0/(20.*k_b))^0.5/k_b    ; root_c2 to avoid overflow in dem_ev
        c3 = -5.*k_b
        c4 = (kappa_0/14.)^0.5/k_b
-       
+
        ;    Radiation in transition region
-       
+
        for i = 0, 450 do begin
          radloss, rad,tdem(i),1, rtv=rtv
          rad_dem(i)=rad
@@ -224,23 +224,23 @@
          endif
        endfor
        root_rad_dem = rad_dem^0.5
-       
+
      endif
-     
+
      ; ---------------------------
      ; Initial static equilibrium
      ; 2 methods. (a) Use EBTEL eqm. (b) Use scalings laws. (a) recommended.
      ; ---------------------------
-     
+
      ; Set up trial values for C1 = 2
-     
+
      tt_old = r2*(3.5*r3/(1. + r3)*length*length*q(0)/kappa_0)^(2./7.)
      radloss, rad, tt_old, 1, rtv=rtv
      nn = (q(0)/((1. + r3)*rad))^0.5
      nn_old = nn
-     
+
      ; Iterate on TT and r3
-     
+
      for i=1,100 do begin
        calc_c1, tt_old, nn, length, rad, r3
        tt_new = r2*(3.5*r3/(1. + r3)*length*length*q(0)/kappa_0)^(2./7.)
@@ -255,21 +255,21 @@
        tt_old = tt_new
        nn_old = nn
      endfor
-     
+
      tt = tt_old
      nn = (q(0)/((1. + r3)*rad))^0.5
 
      ;   If want to fix out of eqm start, e.g. cooling flare. Section 4.2, Paper 3.
 ;        tt=1.e7*r2
 ;        nn = 1e9/r2
-     
+
      print, ' '
      print, 'Model parameters'
      print, '  r1 = ', r1
      print, '  r2 = ', r2
      print, '  R3 = ', r3
      print, ' '
-     
+
      t(0) = tt
      n(0) = nn
      p(0) = 2.*k_b*n(0)*t(0)
@@ -278,16 +278,16 @@
      calc_lambda, t(0), sc
      na(0) = n(0)*r2*exp(-2*length*(1.-sin(3.14159/5.))/3.14159/sc);
      pa(0) = 2*k_b*na(0)*ta(0)
-     
+
      print, 'Initial static equilibrium'
      print, '  L = ', length
      print, '  Q = ', q(0)
      print, '  T, T_a = ', tt,ta(0)
      print, '  n, n_a = ', nn, na(0)
-     
+
      ; Scaling law values
-     
-     lambda_0 = 1.78e-19    
+
+     lambda_0 = 1.78e-19
      lambda_0 = 1.95e-18                           ;  lambda = lambda_0*T^bb
      bb = -0.5
      bb = -2./3.
@@ -297,97 +297,97 @@
        *t_0^((11.-2.*bb)/4.)/length                ;  total pressure (dyn cm^-2)
      n_0 = 0.5*p_0/(t_0*k_b)                           ;  electron number density (cm^-3)
      v_0 = 0.                                          ;  velocity
-     
+
      print, ' '
      print, 'Scaling law values'
      print, '  T = ', t_0
      print, '  P = ', p_0
      print, '  n = ', n_0
-     
+
      ; ----------------------
      ; Time-dependent heating
      ; ----------------------
-     
+
      h_tot=0.
-     
+
      ; Loop over time steps
-  
+
      for i = 0, ntot-2 do begin
        dt = ttime(i+1) - ttime(i)
-       
+
        ; Thermal conduction flux at base
-       
+
        f_cl = c1*(t(i)/r2)^3.5/length
-       
+
        if keyword_set(classical) then begin
          f = f_cl
        endif else begin
          f_sat = sat_limit*c_sat*n(i)*t(i)^1.5
          f = -f_cl*f_sat/(f_cl*f_cl + f_sat*f_sat)^0.5
        endelse
-       
+
        radloss, rad, t(i), 1, rtv=rtv
-       
+
        ; Evaluate C1 - C3
-       
+
        calc_c1, t(i), n(i), length, rad, r3
        calc_c2, r2
        calc_c3, r1
-       
+
        r12 = r1/r2
        r12_tr = r1_tr/r2
-       
+
        c11(i) = r3; Store for output
-       
+
        ; Equilibrium thermal conduction flux at base (-R_tr in ApJ paper)
        f_eq = -r3*n(i)*n(i)*rad*length
-       
+
        ;      pv = 0.4*(f_eq - f)
        pv = 0.4*(f_eq - f - flux_nt(i))
        ;      dn = pv*0.5/(r12*k_b*t(i)*length)*dt
        dn = (pv*0.5/(r12*k_b*t(i)*length) + j_nt(i)/length)*dt
-       
+
        n(i+1) = n(i) + dn
-       
+
        ;      dp = 2./3.*(q(i) + (1. + 1./r3)*f_eq/length)*dt
        dp = 2./3.*(q(i) + (1. + 1./r3)*f_eq/length    $
          - (1. - 1.5*k_b*t(i)/energy_nt)*flux_nt(i)/length)*dt
        p(i+1) = p(i) + dp
-       
+
        t(i+1) = p(i+1)/(n(i+1)*2.*k_b)
-       
+
        v(i+1) = pv/p(i+1)
-       
+
        h_tot = h_tot+heat(i)
-       
+
        ; Calculate scale height
        calc_lambda, t(i+1), sc
-       
+
        ; calculate apex quantities
-       ; 
+       ;
        ta(i+1) = t(i+1)/r2;
        na(i+1) = n(i+1)*r2*exp(-2.*length*(1.-sin(3.14159/5.))/3.14159/sc);
        pa(i+1) = 2*k_b*na(i+1)*ta(i+1)
-       
+
        ; Differential emission measure
        if n_params() gt 12 then begin
-       
+
          ;   Transition Region
          if (r12_tr*t(i) gt tdem(450)) then begin
            print, 'Transition region temperature outside DEM range'
            return
          endif
-         
+
          if (f ne f_eq) then        $
            cf = f*f_eq/(f - f_eq)   $
          else                       $
            cf = 1.e10*f
-           
+
          for j = 0, 450 do begin
            if (tdem(j) lt r12_tr*t(i)) then begin
              ;
              if not keyword_set(dem_old) then begin
-             
+
                ;    New method
                aaa = kappa_0*tdem(j)^1.5
                bbb = -5.*k_b*n(i)*v(i)
@@ -399,9 +399,9 @@
                dtds2 = (-bbb - (bbb*bbb - 4.*aaa*ccc)^0.5)/(2.*aaa)
                dtds = max(dtds1, dtds2)
                dem_tr(i,j) = 2.*p2kt2/dtds  ; factor 2 for both legs
-               
+
              endif else begin
-             
+
                ;    Old method
                ;           approximation to tr. reg. dem when evaporation dominates
                dem_ev = (root_c2/n(i))*(root_c2*p(i)*p(i)  $
@@ -410,32 +410,32 @@
                ;               vmin = max([vabs, abs(f_eq/(2.5*pv))])
                ;               dem_ev = (root_c2/n(i))*(root_c2*p(i)*p(i)  $
                ;                        /root_tdem(j))/vmin*v(i)/vabs
-                 
+
                ;           approximation to tr. reg. dem when condensation dominates
                dem_con = c3*n(i)*v(i)/rad_dem(j)
-               
+
                ;           approximation to tr. reg. dem under equilibrium conditions
                dem_eq = c4*p(i)/(root_rad_dem(j)*fourth_tdem(j))
-               
+
                dem_tr(i,j) = 2.*(f*dem_ev + cf*dem_eq - f_eq*dem_con)   $
                  /(f + cf - f_eq)              ; factor 2 for both legs
-                 
+
                demev(i,j) = 2.*dem_ev
                demcon(i,j) = 2.*dem_con
                demeq(i,j) = 2.*dem_eq
              endelse
-             
+
              f_ratio(i) = f/f_eq
              if keyword_set(classical) then begin
                f_ratio(i) = f/f_eq
              endif else begin
                f_ratio(i) = f_cl/f_sat
              endelse
-             
+
            endif
-           
+
          endfor
-         
+
          ss = where(dem_tr(i,*) lt 0., nneg)
          if (nneg gt 0) then begin
            print, ' '
@@ -447,63 +447,65 @@
              dem_tr(0,*) = 0.  ; to avoid problems at start of run with saturated heat flux
            endelse
          endif
-         
+
          ;   Corona   (EM distributed uniformly over temperture interval [t_min, t_max])
          t_max = max([t(i)/r2, 1.1e4])
          t_min = max([t(i)*(2. - 1/r2), 1.e4])
          j_max = fix((alog10(t_max) - 4.0)*100)
          j_min = fix((alog10(t_min) - 4.0)*100)
-         
+
          em = 2.*n(i)*n(i)*length            ; factor of 2 for both legs
-         
+
          ;         dem0 = em/(t_max - t_min)
          delta_t = 10.^4*(10.^((j_max+0.5)/100.)    $
            - 10.^((j_min-0.5)/100.))
          dem0 = em/delta_t
-         
+
          for j = j_min, j_max do   $
            dem_cor(i,j) = dem0
-           
+
          ;   Transition region radiation losses based on DEM
          if n_params() gt 11 then begin
            rad_loss = 0.
-           
+
            for j = 0, 450 do begin
              if (tdem(j) lt r12_tr*t(i)) then $
                rad_loss = rad_loss + dem_tr(i,j)*rad_dem(j)*tdem(j)*0.01*2.3  ; 2.3=ln(10)
-               
+
            endfor
-           
+
            rad_ratio(i) = -rad_loss/f_eq
          endif
-         
+
        endif
-       
+
        cond(i)=f
        rad_cor(i)=f_eq/r3
-       
+
      endfor
-     
+
      v = r4*v
-     
-     dem_tr(ntot-1,*) = dem_tr(ntot-2,*)
-     dem_cor(ntot-1,*) = dem_cor(ntot-2,*)
+
+     if n_params() gt 12 then begin
+       dem_tr(ntot-1,*) = dem_tr(ntot-2,*)
+       dem_cor(ntot-1,*) = dem_cor(ntot-2,*)
+     endif
      
      jump99:
-     
+
      return
    end
-   
+
    pro radloss, rad, tt, ij, rtv=rtv
-   
+
      ; Rad loss routine
      ; Parameters: Losses, temp, flags
      ; ij = 0 sets the Ks. ij=1 skips this bit. Ks in common block
      ;
      common ks, kt0,kt1,kt2,kt3,kt4,kt5,kt6
-     
+
      ; Set the Ks
-     
+
      if ij eq 0 then begin
        if not keyword_set(rtv) then begin
          ;    Raymond-Klimchuk loss function
@@ -515,7 +517,7 @@
          kt4 = 3.54813e6
          kt5 = 7.94328e6
          kt6 = 4.28048e7
-         
+
        endif else begin
          ;    RTV loss function
          print, ' RTV losses'
@@ -527,10 +529,10 @@
          kt5 = 10.^6.3
        endelse
      end
-     
+
      if not keyword_set(rtv) then begin
        ;    Raymond-Klimchuk loss function
-    
+
          if (tt gt kt6) then rad = 1.96e-27*sqrt(tt) else $
          if (tt gt kt5) then rad = 5.4883e-16/tt else $
          if (tt gt kt4) then rad = 3.4629e-25*(tt^(0.3333333)) else $
@@ -540,10 +542,10 @@
 ;         if (tt gt kt0) then rad = 1.0909e-31*tt*tt $
          if (tt ge kt0) then rad = 1.0909e-31*tt*tt $
        else                rad = 0.0
-     
+
      endif else begin
        ;    RTV loss function
-     
+
          if (tt gt kt5) then rad = 10^(-17.73)/tt^(.666) else $
          if (tt gt kt4) then rad = 10.^(-21.94) else $
          if (tt gt kt3) then rad = 10.^(-10.4)/tt^2. else $
@@ -557,10 +559,10 @@
  ;      rad = 1.95e-18/tt^(2./3.)
      return
    end
-   
+
    pro calc_c1, temp, den, length, rad, c1
      common params, k_b, mp, kappa_0
-     
+
      ; Calculate scale height
      calc_lambda, temp, sc
      ; r3_rad_0: Radiative phase value, no gravity
@@ -570,11 +572,11 @@
      r3_eqm_0 = 2.
      l_fact_eq  = 5.
      l_fact_rad = 5.
-     
+
      calc_c2, r2
-     
+
      f_eq_1 = -den*den*rad*length;
-     
+
      ; Adjust values for gravity
      ;
      r3_eqm_g =   r3_eqm_0*exp(2*2*sin(3.14159/l_fact_eq)*length/3.14159/sc)
@@ -588,43 +590,43 @@
 ;     r3_eqm = r3_eqm_g
 ;     r3_radn = r3_radn_g
      ;Calculate over/under density
-     
+
      n_eq_2 = kappa_0/3.5/r3_eqm/rad/length/length*(temp/r2)^(7./2.)
      noneq2=den^2./n_eq_2
-     
+
      ; Hot loops: use eqm C1
      if (noneq2 lt 1.) then begin
      r3=r3_eqm
      endif
-     
+
      ; Radiative loops: transition from eqm.
-     if (noneq2 ge 1.) then begin   
+     if (noneq2 ge 1.) then begin
      r3=(2.*r3_eqm+r3_radn*(noneq2-1.))/(1+noneq2)
      endif
-     
+
      ; Final value
      c1=r3
-   
+
      ; Short cut to use constant C1
    ;  c1=2. ; EBTEL-2 value
    ;  c1=4. ; Paper 1 value
      return
    end
-   
+
    pro calc_c2, c2
    ;  c2 = 0.87; Paper 1 value
      c2 = 0.9
      return
    end
-   
+
    pro calc_c3, c3
-  
+
      c3=0.6
   ;   c3=0.5 ; Paper 1 value
      return
-     
+
    end
-   
+
    pro calc_lambda, temp, sc
   common params, k_b, mp, kappa_0
      sc = (2.*k_b*temp/mp)/2.74e4
