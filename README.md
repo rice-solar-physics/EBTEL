@@ -80,6 +80,7 @@ Compute the evolution of spatially-averaged (along the field) loop quantities us
     + `IDL> heat_bkg = 1.e-6`     										Low level constant background heating
     + `IDL> heat = heat + heat_bkg`
     + `IDL> length = 7.5e9`           									Loop half length (cm)
+    + `IDL> .run ebtel2`                Compile
 
 + Hydro simulation
     + `IDL> ebtel2, time, heat, length, t, n, p, v, ta, na, pa, c11, dem_tr, dem_cor, logtdem, /classical`
