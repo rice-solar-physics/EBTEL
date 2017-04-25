@@ -98,7 +98,7 @@
      ;      during impulsive events, and the transition region DEM is somewhat elevated.  We have
      ;      therefore introduced r1_tr = 0.5, which provides a more accurate transition region DEM at
      ;      the same time that r1 = 0.7 provides a more accurate radiative cooling.
-     ;   v = (c_3/c_2)*(t_tr/t)*v_0 = (r1/r2)*(t_tr/t)*(v/r4) at temperature t_tr in the transition
+     ;   v = (c_2/c_3)*(t_tr/t)*v_0 = (r2/r1)*(t_tr/t)*(v/r4) at temperature t_tr in the transition
      ;      region, where t is the average coronal temperature.
      ;
 
