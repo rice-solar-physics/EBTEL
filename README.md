@@ -124,7 +124,7 @@ for lines-of-sight perpendicular and parallel to the loop axis. I_tr_perp assume
 + The equilibrium base heat flux coefficient of 2/7 is appropriate for uniform heating; a coefficient of 4/7 is more appropriate for apex heating.
 + To have equal amounts of thermal and nonthermal heating:  flux_nt = heat*length.
 + It is desirable to have a low-level background heating during the cooling phase so that the coronal temperature does not drop below values at which the corona DEM is invalid.
-+ v = (c_3/c_2)(t_tr/t)v_0 = (r1/r2)(t_tr/t)(v/r4) at temperature t_tr in the transition region, where t is the average coronal temperature.
++ v = (c_2/c_3)(t_tr/t)v_0 = (r2/r1)(t_tr/t)(v/r4) at temperature t_tr in the transition region, where t is the average coronal temperature.
 
 
 ## CHANGELOG
