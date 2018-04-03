@@ -190,7 +190,6 @@
      energy_nt = 1.602e-9*energy_nt
      j_nt = flux_nt/energy_nt
 
-
      dlogt_cor = -alog10(r2)
      dj = fix(100*dlogt_cor)
      nj = 2*dj + 1
