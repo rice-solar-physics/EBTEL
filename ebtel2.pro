@@ -187,7 +187,8 @@
      flux_nt = -flux_nt
 
      if not keyword_set(energy_nt) then energy_nt = 50.   ; 50 keV
-     j_nt = 6.241e8*flux_nt/energy_nt
+     energy_nt = 1.602e-9*energy_nt
+     j_nt = flux_nt/energy_nt
 
      dlogt_cor = -alog10(r2)
      dj = fix(100*dlogt_cor)
