@@ -117,12 +117,12 @@
      k_b = 1.38e-16
      mp = 1.67e-24
      n_he_n_p = 0.075;   He/p abundance.
+     ;n_he_n_p = 0.0;     For HYDRAD comparison
      z_avg = (1 + 2*n_he_n_p)/(1 + n_he_n_p); Include Helium
-     z_avg = 1.; For Hydrad comparison.
      kb_fact = 0.5*(1.+1./z_avg)
      k_b = k_b*kb_fact; Modify equation of state for non-e-p plasma
      m_fact = (1 + n_he_n_p*4.)/(2 + 3.*n_he_n_p); Include Helium
-     m_fact = (1 + n_he_n_p*4.)/2.; For Hydrad comparison
+     ;m_fact = (1 + n_he_n_p*4.)/2.; For Hydrad comparison
      mp = mp*m_fact*(1 + z_avg)/z_avg; Average ion mass
 
      kappa_0 = 1.e-6
