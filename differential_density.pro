@@ -53,7 +53,8 @@
 	    dd_cor(i,*) = dem_cor(i,*)/n(i)
 		
 		sc = (2.*k_b*t(i)/mp)/2.74e4 ;   gravitational scale height in corona
-        p2kt = p(i)*exp(2*sin(3.14159/5.)*length/3.14159/sc)/(2.*k_b*t_tr)
+        p2kt = p(i)*exp(2*sin(3.14159/5.)*length/3.14159/sc)/(2.*k_b*t_tr) 
+;  The factor of 5 above is discussed on pg. 6 of Cargill, Bradshaw, & Klimchuk (2012, ApJ, 752, 161)
 ;  Original EBTEL (no stratification)
 ;		p2kt = p(i)/(2.*k_b*t_tr)
 		  
