@@ -1,7 +1,7 @@
    pro ebtel2, ttime, heat, length, t, n, p, v, ta, na, pa, c11, dem_tr, dem_cor,  $
        logtdem, f_ratio, rad_ratio, cond, rad_cor,$
        classical=classical, dynamic=dynamic, dem_old=dem_old, $
-       flux_nt=flux_nt, energy_nt=energy_nt, rtv=rtv
+       flux_nt=flux_nt, energy_nt=energy_nt, rtv=rtv, a_c, a_0, a_tr, l_fact
      ;
      ; NAME:  Enthalpy-Based Thermal Evolution of Loops (EBTEL)
      ;
@@ -18,6 +18,9 @@
      ;   heat   = heating rate array (erg cm^-3 s^-1)   (direct heating only)
      ;              (the first element, heat(0), determines the initial static equilibrium)
      ;   length = loop half length (top of chromosphere to apex) (cm)
+     ;   A_c, A_0, A_TR are normalised area factors for the corona (average) top of the TR, NEW
+     ;   and TR (average) as described in literature (see below). l_fact = l_cor/length recommended NEW
+     ;   value is 0.85            NEW
      ;
      ; OPTIONAL KEYWORD INPUTS:
      ;   classical = set to use the UNsaturated classical heat flux
@@ -100,9 +103,14 @@
      ;      the same time that r1 = 0.7 provides a more accurate radiative cooling.
      ;   v = (c_2/c_3)*(t_tr/t)*v_0 = (r2/r1)*(t_tr/t)*(v/r4) at temperature t_tr in the transition
      ;      region, where t is the average coronal temperature.
+     ;   The non-uniform area version assumes A_c >= A_0 >= A_TR.  There are limits on how large A_c   NEW
+     ;      can be. Too large area factors lead to violation of EBTEL assumptions, in particular that TR  NEW
+     ;      thickness is small compared to the loop length. An initial recommendation is A_c < 5. See
+     ;      Cargill et al, MNRAS, 2021 for more information.  NEW
      ;
 
      ; HISTORY:
+     ; September 2021,  Modified to include non-uniform loop area (see above for caveats)   NEW
      ; May 2012. PC version. Modular form.
      ; See original ebtel.pro for many additional comments.
      ; 2013 Jan 15, JAK, Fixed a bug in the compution of the radiation function at 10^4 K;
@@ -110,7 +118,17 @@
      ;      ge vs. gt in computing rad;  lt vs. le in computing rad_dem
      ; ---------------------------------------------------------------------
      common params, k_b, mp, kappa_0
-
+     common area, a0_ac, atr_ac, l_c, l_tr, l_star; NEW
+          
+     ; Area ratios  ; NEW
+     a0_ac=a_0/a_c ; NEW
+     atr_ac=a_tr/a_c ; NEW
+     
+     ; Modified lengths
+     l_c = l_fact*length ; NEW
+     l_tr=length - l_c ; NEW
+     l_star = l_c + l_tr*atr_ac ; NEW
+     
      ntot = n_elements(ttime)
 
      ; Physical constants Can comment out Hydrad lines if needed.
@@ -242,11 +260,14 @@
 
      ; Iterate on TT and r3
 
+      atr_a0 = a_tr/a_0  ; NEW
+
      for i=1,100 do begin
        calc_c1, tt_old, nn, length, rad, r3
        tt_new = r2*(3.5*r3/(1. + r3)*length*length*q(0)/kappa_0)^(2./7.)
+       tt_new = r2*(3.5*(r3-l_tr/l_c)/(1. + r3*atr_ac)*l_c^2.*q(0)*atr_a0/kappa_0)^(2./7.) ; NEW
        radloss, rad, tt_new, 1, rtv=rtv
-       nn = (q(0)/((1. + r3)*rad))^0.5
+       nn = (l_star/l_c*q(0)/((1. + atr_ac*r3)*rad))^0.5  ; NEW
        err = tt_new - tt_old
        err_n = nn_old - nn
        if abs(err) lt 1e3 then  begin
@@ -258,7 +279,7 @@
      endfor
 
      tt = tt_old
-     nn = (q(0)/((1. + r3)*rad))^0.5
+     nn = (l_star/l_c*q(0)/((1. + atr_ac*r3)*rad))^0.5    ; NEW
 
      ;   If want to fix out of eqm start, e.g. cooling flare. Section 4.2, Paper 3.
 ;        tt=1.e7*r2
@@ -277,7 +298,7 @@
      v(0) = 0.
      ta(0) = t(0)/r2
      calc_lambda, t(0), sc
-     na(0) = n(0)*r2*exp(-2*length*(1.-sin(3.14159/5.))/3.14159/sc);
+     na(0) = n(0)*r2*exp(-2*l_c*(1.-sin(3.14159/5.))/3.14159/sc);
      pa(0) = 2*k_b*na(0)*ta(0)
 
      print, 'Initial static equilibrium'
@@ -319,6 +340,7 @@
        ; Thermal conduction flux at base
 
        f_cl = c1*(t(i)/r2)^3.5/length
+       f_cl = c1*(t(i)/r2)^3.5/l_c  ; NEW
 
        if keyword_set(classical) then begin
          f = f_cl
@@ -345,14 +367,23 @@
 
        ;      pv = 0.4*(f_eq - f)
        pv = 0.4*(f_eq - f - flux_nt(i))
+       
+       pv = 0.4*(atr_ac*f_eq/r3/length*(l_c^2/l_star)*(r3-l_tr/l_c) - a0_ac*f - flux_nt(i))  ; NEW
+       
        ;      dn = pv*0.5/(r12*k_b*t(i)*length)*dt
        dn = (pv*0.5/(r12*k_b*t(i)*length) + j_nt(i)/length)*dt
+       
+       dn = (pv*0.5/(r12*k_b*t(i)*l_c) + j_nt(i)/length)*dt  ; NEW
 
        n(i+1) = n(i) + dn
 
        ;      dp = 2./3.*(q(i) + (1. + 1./r3)*f_eq/length)*dt
        dp = 2./3.*(q(i) + (1. + 1./r3)*f_eq/length    $
          - (1. - 1.5*k_b*t(i)/energy_nt)*flux_nt(i)/length)*dt
+         
+         dp = 2./3.*(q(i) + (l_c/l_star)*(atr_ac + 1./r3)*f_eq/length    $ ;NEW
+         - (1. - 1.5*k_b*t(i)/energy_nt)*flux_nt(i)/length)*dt ;NEW
+         
        p(i+1) = p(i) + dp
 
        t(i+1) = p(i+1)/(n(i+1)*2.*k_b)
@@ -368,6 +399,7 @@
        ;
        ta(i+1) = t(i+1)/r2;
        na(i+1) = n(i+1)*r2*exp(-2.*length*(1.-sin(3.14159/5.))/3.14159/sc);
+             na(i+1) = n(i+1)*r2*exp(-2.*l_c*(1.-sin(3.14159/5.))/3.14159/sc);
        pa(i+1) = 2*k_b*na(i+1)*ta(i+1)
 
        ; Differential emission measure
@@ -481,6 +513,7 @@
        endif
 
        cond(i)=f
+       cond(i)=f*a0_ac ; NEW
        rad_cor(i)=f_eq/r3
 
      endfor
