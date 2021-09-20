@@ -1,7 +1,7 @@
 # Testing with Python
 
-This directory contains a number of tests that can be run with the [`pytest`]() testing framework in Python.
-
+This directory contains a number of tests that can be run with the
+[`pytest`](https://docs.pytest.org/en/stable/) testing framework in Python.
 To install the needed dependencies,
 
 ```shell
