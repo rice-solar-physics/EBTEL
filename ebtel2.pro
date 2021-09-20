@@ -1,7 +1,8 @@
    pro ebtel2, ttime, heat, length, t, n, p, v, ta, na, pa, c11, dem_tr, dem_cor,  $
        logtdem, f_ratio, rad_ratio, cond, rad_cor,$
        classical=classical, dynamic=dynamic, dem_old=dem_old, $
-       flux_nt=flux_nt, energy_nt=energy_nt, rtv=rtv, a_c, a_0, a_tr, l_fact
+       flux_nt=flux_nt, energy_nt=energy_nt, rtv=rtv, $
+       a_c=a_c, a_0=a_0, a_tr=a_tr, l_fact=l_fact
      ;
      ; NAME:  Enthalpy-Based Thermal Evolution of Loops (EBTEL)
      ;
@@ -18,9 +19,6 @@
      ;   heat   = heating rate array (erg cm^-3 s^-1)   (direct heating only)
      ;              (the first element, heat(0), determines the initial static equilibrium)
      ;   length = loop half length (top of chromosphere to apex) (cm)
-     ;   A_c, A_0, A_TR are normalised area factors for the corona (average) top of the TR, NEW
-     ;   and TR (average) as described in literature (see below). l_fact = l_cor/length recommended NEW
-     ;   value is 0.85            NEW
      ;
      ; OPTIONAL KEYWORD INPUTS:
      ;   classical = set to use the UNsaturated classical heat flux
@@ -31,6 +29,14 @@
      ;               (input as a positive quantity; erg cm^-2 s^-1)
      ;   energy_nt = mean energy of the nonthermal electrons in keV (default is 50 keV)
      ;   rtv       = set to use Rosner, Tucker, Vaiana radiative loss function (Winebarger form)
+     ;   a_c       = normalised area factor for the corona (average) as
+     ;               described in literature (see below). (default is 1)
+     ;   a_0       = normalised area factor for the top of the TR as
+     ;               described in literature (see below). (default is 1)
+     ;   a_tr      = normalised area factor for the TR (average) as
+     ;               described in literature (see below). (default is 1)
+     ;   l_fact    = l_cor/length, coronal fraction of loop length recommended value is 0.85
+     ;               (default is 1)
      ;
      ; OUTPUTS:
      ;   t (t_a) = temperature array corresponding to time (avg. over coronal section of loop / apex)
@@ -119,6 +125,11 @@
      ; ---------------------------------------------------------------------
      common params, k_b, mp, kappa_0
      common area, a0_ac, atr_ac, l_c, l_tr, l_star; NEW
+
+     if not keyword_set(a_0) then a_0 = 1. 
+     if not keyword_set(a_c) then a_c = 1. 
+     if not keyword_set(a_tr) then a_tr = 1. 
+     if not keyword_set(l_fact) then l_fact = 1. 
           
      ; Area ratios  ; NEW
      a0_ac=a_0/a_c ; NEW
@@ -260,14 +271,13 @@
 
      ; Iterate on TT and r3
 
-      atr_a0 = a_tr/a_0  ; NEW
+      atr_a0 = a_tr/a_0
 
      for i=1,100 do begin
        calc_c1, tt_old, nn, length, rad, r3
-       tt_new = r2*(3.5*r3/(1. + r3)*length*length*q(0)/kappa_0)^(2./7.)
-       tt_new = r2*(3.5*(r3-l_tr/l_c)/(1. + r3*atr_ac)*l_c^2.*q(0)*atr_a0/kappa_0)^(2./7.) ; NEW
+       tt_new = r2*(3.5*(r3-l_tr/l_c)/(1. + r3*atr_ac)*l_c^2.*q(0)*atr_a0/kappa_0)^(2./7.)
        radloss, rad, tt_new, 1, rtv=rtv
-       nn = (l_star/l_c*q(0)/((1. + atr_ac*r3)*rad))^0.5  ; NEW
+       nn = (l_star/l_c*q(0)/((1. + atr_ac*r3)*rad))^0.5
        err = tt_new - tt_old
        err_n = nn_old - nn
        if abs(err) lt 1e3 then  begin
@@ -279,7 +289,7 @@
      endfor
 
      tt = tt_old
-     nn = (l_star/l_c*q(0)/((1. + atr_ac*r3)*rad))^0.5    ; NEW
+     nn = (l_star/l_c*q(0)/((1. + atr_ac*r3)*rad))^0.5
 
      ;   If want to fix out of eqm start, e.g. cooling flare. Section 4.2, Paper 3.
 ;        tt=1.e7*r2
@@ -298,7 +308,7 @@
      v(0) = 0.
      ta(0) = t(0)/r2
      calc_lambda, t(0), sc
-     na(0) = n(0)*r2*exp(-2*l_c*(1.-sin(3.14159/5.))/3.14159/sc);
+     na(0) = n(0)*r2*exp(-2*l_c*(1.-sin(3.14159/5.))/3.14159/sc)
      pa(0) = 2*k_b*na(0)*ta(0)
 
      print, 'Initial static equilibrium'
@@ -339,8 +349,7 @@
 
        ; Thermal conduction flux at base
 
-       f_cl = c1*(t(i)/r2)^3.5/length
-       f_cl = c1*(t(i)/r2)^3.5/l_c  ; NEW
+       f_cl = c1*(t(i)/r2)^3.5/l_c
 
        if keyword_set(classical) then begin
          f = f_cl
@@ -365,24 +374,14 @@
        ; Equilibrium thermal conduction flux at base (-R_tr in ApJ paper)
        f_eq = -r3*n(i)*n(i)*rad*length
 
-       ;      pv = 0.4*(f_eq - f)
-       pv = 0.4*(f_eq - f - flux_nt(i))
-       
-       pv = 0.4*(atr_ac*f_eq/r3/length*(l_c^2/l_star)*(r3-l_tr/l_c) - a0_ac*f - flux_nt(i))  ; NEW
-       
-       ;      dn = pv*0.5/(r12*k_b*t(i)*length)*dt
-       dn = (pv*0.5/(r12*k_b*t(i)*length) + j_nt(i)/length)*dt
-       
-       dn = (pv*0.5/(r12*k_b*t(i)*l_c) + j_nt(i)/length)*dt  ; NEW
+       pv = 0.4*(atr_ac*f_eq/r3/length*(l_c^2/l_star)*(r3-l_tr/l_c) - a0_ac*f - flux_nt(i))
+              
+       dn = (pv*0.5/(r12*k_b*t(i)*l_c) + j_nt(i)/length)*dt
 
        n(i+1) = n(i) + dn
-
-       ;      dp = 2./3.*(q(i) + (1. + 1./r3)*f_eq/length)*dt
-       dp = 2./3.*(q(i) + (1. + 1./r3)*f_eq/length    $
-         - (1. - 1.5*k_b*t(i)/energy_nt)*flux_nt(i)/length)*dt
          
-         dp = 2./3.*(q(i) + (l_c/l_star)*(atr_ac + 1./r3)*f_eq/length    $ ;NEW
-         - (1. - 1.5*k_b*t(i)/energy_nt)*flux_nt(i)/length)*dt ;NEW
+       dp = 2./3.*(q(i) + (l_c/l_star)*(atr_ac + 1./r3)*f_eq/length    $
+            - (1. - 1.5*k_b*t(i)/energy_nt)*flux_nt(i)/length)*dt
          
        p(i+1) = p(i) + dp
 
@@ -398,8 +397,7 @@
        ; calculate apex quantities
        ;
        ta(i+1) = t(i+1)/r2;
-       na(i+1) = n(i+1)*r2*exp(-2.*length*(1.-sin(3.14159/5.))/3.14159/sc);
-             na(i+1) = n(i+1)*r2*exp(-2.*l_c*(1.-sin(3.14159/5.))/3.14159/sc);
+       na(i+1) = n(i+1)*r2*exp(-2.*l_c*(1.-sin(3.14159/5.))/3.14159/sc);
        pa(i+1) = 2*k_b*na(i+1)*ta(i+1)
 
        ; Differential emission measure
@@ -512,8 +510,7 @@
 
        endif
 
-       cond(i)=f
-       cond(i)=f*a0_ac ; NEW
+       cond(i)=f*a0_ac
        rad_cor(i)=f_eq/r3
 
      endfor
