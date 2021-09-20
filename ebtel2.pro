@@ -109,14 +109,14 @@
      ;      the same time that r1 = 0.7 provides a more accurate radiative cooling.
      ;   v = (c_2/c_3)*(t_tr/t)*v_0 = (r2/r1)*(t_tr/t)*(v/r4) at temperature t_tr in the transition
      ;      region, where t is the average coronal temperature.
-     ;   The non-uniform area version assumes A_c >= A_0 >= A_TR.  There are limits on how large A_c   NEW
-     ;      can be. Too large area factors lead to violation of EBTEL assumptions, in particular that TR  NEW
+     ;   The non-uniform area version assumes A_c >= A_0 >= A_TR.  There are limits on how large A_c
+     ;      can be. Too large area factors lead to violation of EBTEL assumptions, in particular that TR
      ;      thickness is small compared to the loop length. An initial recommendation is A_c < 5. See
-     ;      Cargill et al, MNRAS, 2021 for more information.  NEW
+     ;      Cargill et al, MNRAS, 2021 for more information.
      ;
 
      ; HISTORY:
-     ; September 2021,  Modified to include non-uniform loop area (see above for caveats)   NEW
+     ; September 2021,  Modified to include non-uniform loop area (see above for caveats) 
      ; May 2012. PC version. Modular form.
      ; See original ebtel.pro for many additional comments.
      ; 2013 Jan 15, JAK, Fixed a bug in the compution of the radiation function at 10^4 K;
