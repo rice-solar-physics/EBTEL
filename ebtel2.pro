@@ -124,21 +124,21 @@
      ;      ge vs. gt in computing rad;  lt vs. le in computing rad_dem
      ; ---------------------------------------------------------------------
      common params, k_b, mp, kappa_0
-     common area, a0_ac, atr_ac, l_c, l_tr, l_star; NEW
+     common area, a0_ac, atr_ac, l_c, l_tr, l_star
 
      if not keyword_set(a_0) then a_0 = 1. 
      if not keyword_set(a_c) then a_c = 1. 
      if not keyword_set(a_tr) then a_tr = 1. 
      if not keyword_set(l_fact) then l_fact = 1. 
           
-     ; Area ratios  ; NEW
-     a0_ac=a_0/a_c ; NEW
-     atr_ac=a_tr/a_c ; NEW
+     ; Area ratios
+     a0_ac=a_0/a_c
+     atr_ac=a_tr/a_c
      
      ; Modified lengths
-     l_c = l_fact*length ; NEW
-     l_tr=length - l_c ; NEW
-     l_star = l_c + l_tr*atr_ac ; NEW
+     l_c = l_fact*length
+     l_tr=length - l_c
+     l_star = l_c + l_tr*atr_ac
      
      ntot = n_elements(ttime)
 
