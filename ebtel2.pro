@@ -1,7 +1,8 @@
    pro ebtel2, ttime, heat, length, t, n, p, v, ta, na, pa, c11, dem_tr, dem_cor,  $
        logtdem, f_ratio, rad_ratio, cond, rad_cor,$
        classical=classical, dynamic=dynamic, dem_old=dem_old, $
-       flux_nt=flux_nt, energy_nt=energy_nt, rtv=rtv
+       flux_nt=flux_nt, energy_nt=energy_nt, rtv=rtv, $
+       a_c=a_c, a_0=a_0, a_tr=a_tr, l_fact=l_fact
      ;
      ; NAME:  Enthalpy-Based Thermal Evolution of Loops (EBTEL)
      ;
@@ -22,31 +23,39 @@
      ; OPTIONAL KEYWORD INPUTS:
      ;   classical = set to use the UNsaturated classical heat flux
      ;   dynamic   = set to use dynamical r1 and r2 (NOT recommended, especially when T > 10 MK). Now redundant.
-     ;   dem_old   = set to use old technique of computing DEM(T) in the trans. reg.
+     ;   dem_old   = set to use old technique of computing DEM(T) in the transition region
      ;               (weighted average of demev, demcon, and demeq)
      ;   flux_nt   = energy flux array for nonthermal electrons impinging the chromosphere
      ;               (input as a positive quantity; erg cm^-2 s^-1)
      ;   energy_nt = mean energy of the nonthermal electrons in keV (default is 50 keV)
      ;   rtv       = set to use Rosner, Tucker, Vaiana radiative loss function (Winebarger form)
+     ;   a_c       = normalised area factor for the corona (average) as
+     ;               described in literature (see below). (default is 1)
+     ;   a_0       = normalised area factor for the top of the TR as
+     ;               described in literature (see below). (default is 1)
+     ;   a_tr      = normalised area factor for the TR (average) as
+     ;               described in literature (see below). (default is 1)
+     ;   l_fact    = l_cor/length, coronal fraction of loop length recommended value is 0.85
+     ;               (default is 1)
      ;
      ; OUTPUTS:
-     ;   t (t_a) = temperature array corresponding to time (avg. over coronal section of loop / apex)
-     ;   n (n_a) = electron number density array (cm^-3) (coronal avg. / apex)
-     ;   p (p_a) = pressure array (dyn cm^-2) (coronal avg. /apex)
-     ;   v = velocity array (cm s^-1) (r4 * velocity at base of corona)
-     ;   c11 = C1 (or r3 in this code)
-     ;   dem_tr = differential emission measure of transition region, dem(time,T), both legs
-     ;             (dem = n^2 * ds/dT  cm^-5 K^-1)
-     ;             (Note:  dem_tr is not reliable when a nonthermal electron flux is used.)
-     ;   dem_cor = differential emission measure of corona, dem(time,T), both legs
-     ;             (Int{dem_cor+dem_tr dT} gives the total emission measure of a
-     ;             loop strand having a cross sectional area of 1 cm^2)
-     ;   logtdem = logT array corresponding to dem_tr and dem_cor
-     ;   f_ratio = ratio of heat flux to equilibrium heat flux
-     ;             (ratio of heat flux to tr. reg. radiative loss rate)
+     ;   t (t_a)   = temperature array corresponding to time (avg. over coronal section of loop / apex)
+     ;   n (n_a)   = electron number density array (cm^-3) (coronal avg. / apex)
+     ;   p (p_a)   = pressure array (dyn cm^-2) (coronal avg. /apex)
+     ;   v         = velocity array (cm s^-1) (r4 * velocity at base of corona)
+     ;   c11       = C1 (or r3 in this code)
+     ;   dem_tr    = differential emission measure of transition region, dem(time,T), both legs
+     ;               (dem = n^2 * ds/dT  cm^-5 K^-1)
+     ;               (Note:  dem_tr is not reliable when a nonthermal electron flux is used.)
+     ;   dem_cor   = differential emission measure of corona, dem(time,T), both legs
+     ;               (Int{dem_cor+dem_tr dT} gives the total emission measure of a
+     ;               loop strand having a cross sectional area of 1 cm^2)
+     ;   logtdem   = logT array corresponding to dem_tr and dem_cor
+     ;   f_ratio   = ratio of heat flux to equilibrium heat flux
+     ;               (ratio of heat flux to tr. reg. radiative loss rate)
      ;   rad_ratio = ratio of tr. reg. radiative loss rate from dem_tr and from r3*(coronal rate)
-     ;   cond = conductive loss from corona
-     ;   rad_cor =  coronal radiative loss
+     ;   cond      = conductive loss from corona
+     ;   rad_cor   = coronal radiative loss
      ;
      ; CORRESPONDENCE WITH VARIABLES IN ASTROPHYSICAL JOURNAL ARTICLES:
      ;          (Klimchuk et al., 2008, ApJ, 682, 1351; Cargill et al., ApJ 2012)
@@ -100,9 +109,14 @@
      ;      the same time that r1 = 0.7 provides a more accurate radiative cooling.
      ;   v = (c_2/c_3)*(t_tr/t)*v_0 = (r2/r1)*(t_tr/t)*(v/r4) at temperature t_tr in the transition
      ;      region, where t is the average coronal temperature.
+     ;   The non-uniform area version assumes A_c >= A_0 >= A_TR.  There are limits on how large A_c
+     ;      can be. Too large area factors lead to violation of EBTEL assumptions, in particular that TR
+     ;      thickness is small compared to the loop length. An initial recommendation is A_c < 5. See
+     ;      Cargill et al, MNRAS, 2021 for more information.
      ;
 
      ; HISTORY:
+     ; September 2021,  Modified to include non-uniform loop area (see above for caveats) 
      ; May 2012. PC version. Modular form.
      ; See original ebtel.pro for many additional comments.
      ; 2013 Jan 15, JAK, Fixed a bug in the compution of the radiation function at 10^4 K;
@@ -110,7 +124,22 @@
      ;      ge vs. gt in computing rad;  lt vs. le in computing rad_dem
      ; ---------------------------------------------------------------------
      common params, k_b, mp, kappa_0
+     common area, a0_ac, atr_ac, l_c, l_tr, l_star
 
+     if not keyword_set(a_0) then a_0 = 1. 
+     if not keyword_set(a_c) then a_c = 1. 
+     if not keyword_set(a_tr) then a_tr = 1. 
+     if not keyword_set(l_fact) then l_fact = 1. 
+          
+     ; Area ratios
+     a0_ac=a_0/a_c
+     atr_ac=a_tr/a_c
+     
+     ; Modified lengths
+     l_c = l_fact*length
+     l_tr=length - l_c
+     l_star = l_c + l_tr*atr_ac
+     
      ntot = n_elements(ttime)
 
      ; Physical constants Can comment out Hydrad lines if needed.
@@ -242,11 +271,13 @@
 
      ; Iterate on TT and r3
 
+      atr_a0 = a_tr/a_0
+
      for i=1,100 do begin
        calc_c1, tt_old, nn, length, rad, r3
-       tt_new = r2*(3.5*r3/(1. + r3)*length*length*q(0)/kappa_0)^(2./7.)
+       tt_new = r2*(3.5*(r3-l_tr/l_c)/(1. + r3*atr_ac)*l_c^2.*q(0)*atr_a0/kappa_0)^(2./7.)
        radloss, rad, tt_new, 1, rtv=rtv
-       nn = (q(0)/((1. + r3)*rad))^0.5
+       nn = (l_star/l_c*q(0)/((1. + atr_ac*r3)*rad))^0.5
        err = tt_new - tt_old
        err_n = nn_old - nn
        if abs(err) lt 1e3 then  begin
@@ -258,7 +289,7 @@
      endfor
 
      tt = tt_old
-     nn = (q(0)/((1. + r3)*rad))^0.5
+     nn = (l_star/l_c*q(0)/((1. + atr_ac*r3)*rad))^0.5
 
      ;   If want to fix out of eqm start, e.g. cooling flare. Section 4.2, Paper 3.
 ;        tt=1.e7*r2
@@ -277,7 +308,7 @@
      v(0) = 0.
      ta(0) = t(0)/r2
      calc_lambda, t(0), sc
-     na(0) = n(0)*r2*exp(-2*length*(1.-sin(3.14159/5.))/3.14159/sc);
+     na(0) = n(0)*r2*exp(-2*l_c*(1.-sin(3.14159/5.))/3.14159/sc)
      pa(0) = 2*k_b*na(0)*ta(0)
 
      print, 'Initial static equilibrium'
@@ -318,7 +349,7 @@
 
        ; Thermal conduction flux at base
 
-       f_cl = c1*(t(i)/r2)^3.5/length
+       f_cl = c1*(t(i)/r2)^3.5/l_c
 
        if keyword_set(classical) then begin
          f = f_cl
@@ -343,16 +374,15 @@
        ; Equilibrium thermal conduction flux at base (-R_tr in ApJ paper)
        f_eq = -r3*n(i)*n(i)*rad*length
 
-       ;      pv = 0.4*(f_eq - f)
-       pv = 0.4*(f_eq - f - flux_nt(i))
-       ;      dn = pv*0.5/(r12*k_b*t(i)*length)*dt
-       dn = (pv*0.5/(r12*k_b*t(i)*length) + j_nt(i)/length)*dt
+       pv = 0.4*(atr_ac*f_eq/r3/length*(l_c^2/l_star)*(r3-l_tr/l_c) - a0_ac*f - flux_nt(i))
+              
+       dn = (pv*0.5/(r12*k_b*t(i)*l_c) + j_nt(i)/length)*dt
 
        n(i+1) = n(i) + dn
-
-       ;      dp = 2./3.*(q(i) + (1. + 1./r3)*f_eq/length)*dt
-       dp = 2./3.*(q(i) + (1. + 1./r3)*f_eq/length    $
-         - (1. - 1.5*k_b*t(i)/energy_nt)*flux_nt(i)/length)*dt
+         
+       dp = 2./3.*(q(i) + (l_c/l_star)*(atr_ac + 1./r3)*f_eq/length    $
+            - (1. - 1.5*k_b*t(i)/energy_nt)*flux_nt(i)/length)*dt
+         
        p(i+1) = p(i) + dp
 
        t(i+1) = p(i+1)/(n(i+1)*2.*k_b)
@@ -367,7 +397,7 @@
        ; calculate apex quantities
        ;
        ta(i+1) = t(i+1)/r2;
-       na(i+1) = n(i+1)*r2*exp(-2.*length*(1.-sin(3.14159/5.))/3.14159/sc);
+       na(i+1) = n(i+1)*r2*exp(-2.*l_c*(1.-sin(3.14159/5.))/3.14159/sc);
        pa(i+1) = 2*k_b*na(i+1)*ta(i+1)
 
        ; Differential emission measure
@@ -480,7 +510,7 @@
 
        endif
 
-       cond(i)=f
+       cond(i)=f*a0_ac
        rad_cor(i)=f_eq/r3
 
      endfor
