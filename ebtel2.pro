@@ -23,7 +23,7 @@
      ; OPTIONAL KEYWORD INPUTS:
      ;   classical = set to use the UNsaturated classical heat flux
      ;   dynamic   = set to use dynamical r1 and r2 (NOT recommended, especially when T > 10 MK). Now redundant.
-     ;   dem_old   = set to use old technique of computing DEM(T) in the trans. reg.
+     ;   dem_old   = set to use old technique of computing DEM(T) in the transition region
      ;               (weighted average of demev, demcon, and demeq)
      ;   flux_nt   = energy flux array for nonthermal electrons impinging the chromosphere
      ;               (input as a positive quantity; erg cm^-2 s^-1)
@@ -39,23 +39,23 @@
      ;               (default is 1)
      ;
      ; OUTPUTS:
-     ;   t (t_a) = temperature array corresponding to time (avg. over coronal section of loop / apex)
-     ;   n (n_a) = electron number density array (cm^-3) (coronal avg. / apex)
-     ;   p (p_a) = pressure array (dyn cm^-2) (coronal avg. /apex)
-     ;   v = velocity array (cm s^-1) (r4 * velocity at base of corona)
-     ;   c11 = C1 (or r3 in this code)
-     ;   dem_tr = differential emission measure of transition region, dem(time,T), both legs
-     ;             (dem = n^2 * ds/dT  cm^-5 K^-1)
-     ;             (Note:  dem_tr is not reliable when a nonthermal electron flux is used.)
-     ;   dem_cor = differential emission measure of corona, dem(time,T), both legs
-     ;             (Int{dem_cor+dem_tr dT} gives the total emission measure of a
-     ;             loop strand having a cross sectional area of 1 cm^2)
-     ;   logtdem = logT array corresponding to dem_tr and dem_cor
-     ;   f_ratio = ratio of heat flux to equilibrium heat flux
-     ;             (ratio of heat flux to tr. reg. radiative loss rate)
+     ;   t (t_a)   = temperature array corresponding to time (avg. over coronal section of loop / apex)
+     ;   n (n_a)   = electron number density array (cm^-3) (coronal avg. / apex)
+     ;   p (p_a)   = pressure array (dyn cm^-2) (coronal avg. /apex)
+     ;   v         = velocity array (cm s^-1) (r4 * velocity at base of corona)
+     ;   c11       = C1 (or r3 in this code)
+     ;   dem_tr    = differential emission measure of transition region, dem(time,T), both legs
+     ;               (dem = n^2 * ds/dT  cm^-5 K^-1)
+     ;               (Note:  dem_tr is not reliable when a nonthermal electron flux is used.)
+     ;   dem_cor   = differential emission measure of corona, dem(time,T), both legs
+     ;               (Int{dem_cor+dem_tr dT} gives the total emission measure of a
+     ;               loop strand having a cross sectional area of 1 cm^2)
+     ;   logtdem   = logT array corresponding to dem_tr and dem_cor
+     ;   f_ratio   = ratio of heat flux to equilibrium heat flux
+     ;               (ratio of heat flux to tr. reg. radiative loss rate)
      ;   rad_ratio = ratio of tr. reg. radiative loss rate from dem_tr and from r3*(coronal rate)
-     ;   cond = conductive loss from corona
-     ;   rad_cor =  coronal radiative loss
+     ;   cond      = conductive loss from corona
+     ;   rad_cor   = coronal radiative loss
      ;
      ; CORRESPONDENCE WITH VARIABLES IN ASTROPHYSICAL JOURNAL ARTICLES:
      ;          (Klimchuk et al., 2008, ApJ, 682, 1351; Cargill et al., ApJ 2012)
