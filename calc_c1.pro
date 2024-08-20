@@ -29,7 +29,7 @@ pro calc_c1, temp, den, length, rad, c1
     ;
     ;Calculate over/under density
     ;    
-    n_eq_2 = (a0_ac/atr_ac)*kappa_0/3.5/r3_eqm/rad*(l_star/length/l_c^2)*(temp/r2)^(7./2.)/(1.-l_tr/l_c/r3_eqm)
+    n_eq_2 = (a0_ac/atr_ac)*kappa_0/3.5/r3_eqm/rad*(l_star/l_c^3)*(temp/r2)^(7./2.)/(1.-l_tr/l_c/r3_eqm)
         
     noneq2=den^2./n_eq_2
     

@@ -50,13 +50,16 @@ def run_idl(ebtel_idl_path, config):
         'return_vars': config['return_vars'],
     }
     idl = hissw.Environment(extra_paths=[ebtel_idl_path])
-    script = """time = {{ time }}
-heat = {{ heat }}
-loop_length = {{ loop_length }}
+    script = """time = {{ time | force_double_precision }}
+heat = {{ heat | force_double_precision }}
+loop_length = {{ loop_length | force_double_precision }}
 ebtel2,time,heat,loop_length,{{ return_vars | join(',') }}{% if flags %}, /{{ flags | join(', /') }}{% endif %}{% if keywords %}, {{ keywords | join(',') }}{% endif %}
     """
     
-    return idl.run(script, args=args, save_vars=config['return_vars'])
+    result = idl.run(script, args=args, save_vars=config['return_vars'])
+    result['time'] = time
+    result['heat'] = heat
+    return result
 
 
 def plot_results(result):
